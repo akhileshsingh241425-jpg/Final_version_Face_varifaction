@@ -199,5 +199,5 @@ async def verify_employee(
 # ==========================================================
 if __name__ == "__main__":
     import uvicorn
-    print("🚀 Face Verification Server Starting on port 5000...")
-    uvicorn.run(app, host="0.0.0.0", port=5000)
+    print("🚀 Face Verification Server Starting on port 5001...")
+    uvicorn.run(app, host="0.0.0.0", port=5001)
