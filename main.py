@@ -6,7 +6,7 @@ import numpy as np
 import cv2
 import face_recognition
 from PIL import Image
-from deepface import DeepFace
+
 from fastapi import FastAPI, UploadFile, Form
 from fastapi.responses import JSONResponse
 
