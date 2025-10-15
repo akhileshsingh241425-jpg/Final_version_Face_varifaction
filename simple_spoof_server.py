@@ -262,20 +262,28 @@ class SimpleSpoofDetector:
             print(f"📷 Reference image: {ref_array.shape}")
             print(f"📷 Test image: {test_array.shape}")
             
-            # Get face encodings with more relaxed detection (model: cnn or hog)
-            # Try CNN first (more accurate but slower), fallback to HOG (faster)
-            print("🔍 Detecting faces with CNN model...")
-            ref_encodings = face_recognition.face_encodings(ref_array, model="cnn")
-            test_encodings = face_recognition.face_encodings(test_array, model="cnn")
+            # Try multiple detection strategies for better success rate
+            print("🔍 Detecting faces with HOG model (fast)...")
             
-            # If CNN fails, try HOG model
-            if len(test_encodings) == 0:
-                print("⚠️ CNN failed, trying HOG model...")
-                test_encodings = face_recognition.face_encodings(test_array, model="hog")
+            # First try: Standard HOG detection
+            ref_face_locations = face_recognition.face_locations(ref_array, model="hog")
+            test_face_locations = face_recognition.face_locations(test_array, model="hog")
             
-            if len(ref_encodings) == 0:
-                print("⚠️ No face in reference, trying HOG model...")
-                ref_encodings = face_recognition.face_encodings(ref_array, model="hog")
+            # If HOG fails, try with number_of_times_to_upsample for smaller faces
+            if len(test_face_locations) == 0:
+                print("⚠️ Upsampling image to detect smaller faces...")
+                test_face_locations = face_recognition.face_locations(test_array, number_of_times_to_upsample=2, model="hog")
+            
+            if len(ref_face_locations) == 0:
+                print("⚠️ Upsampling reference image...")
+                ref_face_locations = face_recognition.face_locations(ref_array, number_of_times_to_upsample=2, model="hog")
+            
+            print(f"👤 Reference face locations: {len(ref_face_locations)}")
+            print(f"👤 Test face locations: {len(test_face_locations)}")
+            
+            # Get encodings from detected locations
+            ref_encodings = face_recognition.face_encodings(ref_array, ref_face_locations) if ref_face_locations else []
+            test_encodings = face_recognition.face_encodings(test_array, test_face_locations) if test_face_locations else []
             
             print(f"👤 Reference faces: {len(ref_encodings)}")
             print(f"👤 Test faces: {len(test_encodings)}")
