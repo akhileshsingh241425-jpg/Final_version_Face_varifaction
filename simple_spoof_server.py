@@ -262,9 +262,20 @@ class SimpleSpoofDetector:
             print(f"📷 Reference image: {ref_array.shape}")
             print(f"📷 Test image: {test_array.shape}")
             
-            # Get face encodings
-            ref_encodings = face_recognition.face_encodings(ref_array)
-            test_encodings = face_recognition.face_encodings(test_array)
+            # Get face encodings with more relaxed detection (model: cnn or hog)
+            # Try CNN first (more accurate but slower), fallback to HOG (faster)
+            print("🔍 Detecting faces with CNN model...")
+            ref_encodings = face_recognition.face_encodings(ref_array, model="cnn")
+            test_encodings = face_recognition.face_encodings(test_array, model="cnn")
+            
+            # If CNN fails, try HOG model
+            if len(test_encodings) == 0:
+                print("⚠️ CNN failed, trying HOG model...")
+                test_encodings = face_recognition.face_encodings(test_array, model="hog")
+            
+            if len(ref_encodings) == 0:
+                print("⚠️ No face in reference, trying HOG model...")
+                ref_encodings = face_recognition.face_encodings(ref_array, model="hog")
             
             print(f"👤 Reference faces: {len(ref_encodings)}")
             print(f"👤 Test faces: {len(test_encodings)}")
