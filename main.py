@@ -14,6 +14,14 @@ from fastapi.responses import JSONResponse
 app = FastAPI()
 
 # ==========================================================
+# ✅ HEALTH CHECK ENDPOINT
+# ==========================================================
+@app.get("/")
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "message": "Face Verification Server Running", "port": 5001}
+
+# ==========================================================
 # ✅ YOLO SPOOF CLASSIFIER (For Real vs Fake Face Detection)
 # ==========================================================
 class SimpleSpoofDetector:
@@ -195,9 +203,40 @@ async def verify_employee(
 
 
 # ==========================================================
+# ✅ SERVE HTML UI
+# ==========================================================
+@app.get("/ui")
+async def serve_ui():
+    from fastapi.responses import HTMLResponse
+    try:
+        with open("test_main_ui.html", "r") as f:
+            html_content = f.read()
+        return HTMLResponse(content=html_content)
+    except FileNotFoundError:
+        return HTMLResponse(content="<h1>UI file not found. Please ensure test_main_ui.html is in the same directory.</h1>")
+
+
+# ==========================================================
 # ✅ MAIN ENTRY POINT
 # ==========================================================
 if __name__ == "__main__":
     import uvicorn
+    import webbrowser
+    import threading
+    
+    def open_browser():
+        import time
+        time.sleep(2)  # Wait for server to start
+        webbrowser.open('http://localhost:5001/ui')
+    
     print("🚀 Face Verification Server Starting on port 5001...")
+    print("🌐 Opening browser UI automatically...")
+    print("📡 Server: http://localhost:5001")
+    print("🖥️  UI: http://localhost:5001/ui")
+    print("📋 API Docs: http://localhost:5001/docs")
+    
+    # Open browser in background thread
+    threading.Thread(target=open_browser, daemon=True).start()
+    
+    uvicorn.run(app, host="0.0.0.0", port=5001)
     uvicorn.run(app, host="0.0.0.0", port=5001)

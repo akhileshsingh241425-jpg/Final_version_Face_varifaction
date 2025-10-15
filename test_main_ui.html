@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Verification Test - Port 5001</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus, input[type="file"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+        
+        .result h3 {
+            margin-bottom: 10px;
+        }
+        
+        .result-detail {
+            margin: 8px 0;
+            padding: 8px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 5px;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            display: none;
+        }
+        
+        .preview {
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .info-box strong {
+            color: #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Face Verification Test</h1>
+        <p class="subtitle">Testing main.py on Port 5001</p>
+        
+        <div class="info-box">
+            <strong>📡 Server:</strong> http://93.127.194.235:5001<br>
+            <strong>🎯 Endpoint:</strong> /verify
+        </div>
+
+        <form id="verifyForm">
+            <div class="form-group">
+                <label for="employeeId">👤 Employee ID</label>
+                <input type="text" id="employeeId" name="employeeId" placeholder="Enter Employee ID (e.g., 000099)" required>
+            </div>
+
+            <div class="form-group">
+                <label for="employeeName">📝 Employee Name</label>
+                <input type="text" id="employeeName" name="employeeName" placeholder="Enter Employee Name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="department">🏢 Department</label>
+                <input type="text" id="department" name="department" placeholder="Enter Department" required>
+            </div>
+
+            <div class="form-group">
+                <label for="referenceUrl">🖼️ Reference Image URL</label>
+                <input type="text" id="referenceUrl" name="referenceUrl" placeholder="https://hrm.umanerp.com/uploads/..." required>
+            </div>
+
+            <div class="form-group">
+                <label for="capturedImage">📸 Capture/Upload Image</label>
+                <input type="file" id="capturedImage" name="capturedImage" accept="image/*" capture="environment" required>
+                <div class="preview" id="imagePreview"></div>
+            </div>
+
+            <button type="submit" class="btn">🚀 Verify Employee</button>
+        </form>
+
+        <div class="loading" id="loading">
+            ⏳ Processing... Please wait
+        </div>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://93.127.194.235:5001/verify';
+
+        // Image preview
+        document.getElementById('capturedImage').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagePreview').innerHTML = 
+                        `<img src="${e.target.result}" alt="Preview">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('verifyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const loading = document.getElementById('loading');
+            const resultDiv = document.getElementById('result');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            // Show loading
+            loading.style.display = 'block';
+            resultDiv.style.display = 'none';
+            submitBtn.disabled = true;
+            
+            try {
+                const formData = new FormData();
+                formData.append('employee_id', document.getElementById('employeeId').value);
+                formData.append('employee_name', document.getElementById('employeeName').value);
+                formData.append('department', document.getElementById('department').value);
+                formData.append('reference_image_url', document.getElementById('referenceUrl').value);
+                formData.append('captured_image', document.getElementById('capturedImage').files[0]);
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                // Display result
+                resultDiv.className = 'result';
+                
+                if (result.verification && result.verification.status) {
+                    resultDiv.classList.add('success');
+                    resultDiv.innerHTML = `
+                        <h3>✅ Verification Successful!</h3>
+                        <div class="result-detail"><strong>Employee:</strong> ${result.employee_name}</div>
+                        <div class="result-detail"><strong>ID:</strong> ${result.employee_id}</div>
+                        <div class="result-detail"><strong>Department:</strong> ${result.department}</div>
+                        <div class="result-detail"><strong>Real Probability:</strong> ${(result.spoof_check.real_prob * 100).toFixed(1)}%</div>
+                        <div class="result-detail"><strong>Spoof Probability:</strong> ${(result.spoof_check.spoof_prob * 100).toFixed(1)}%</div>
+                        <div class="result-detail"><strong>Face Distance:</strong> ${result.verification.distance.toFixed(4)}</div>
+                        <div class="result-detail"><strong>Processing Time:</strong> ${result.processing_time}s</div>
+                    `;
+                } else {
+                    resultDiv.classList.add('error');
+                    const message = result.message || result.verification?.message || 'Verification failed';
+                    resultDiv.innerHTML = `
+                        <h3>❌ Verification Failed</h3>
+                        <div class="result-detail"><strong>Reason:</strong> ${message}</div>
+                        ${result.spoof_check ? `<div class="result-detail"><strong>Real Probability:</strong> ${(result.spoof_check.real_prob * 100).toFixed(1)}%</div>` : ''}
+                        ${result.spoof_check ? `<div class="result-detail"><strong>Spoof Probability:</strong> ${(result.spoof_check.spoof_prob * 100).toFixed(1)}%</div>` : ''}
+                        ${result.verification?.distance ? `<div class="result-detail"><strong>Face Distance:</strong> ${result.verification.distance.toFixed(4)}</div>` : ''}
+                    `;
+                }
+                
+                resultDiv.style.display = 'block';
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ Error</h3>
+                    <div class="result-detail">${error.message}</div>
+                    <div class="result-detail">Make sure the server is running on port 5001</div>
+                `;
+                resultDiv.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
