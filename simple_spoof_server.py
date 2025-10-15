@@ -35,29 +35,24 @@ class SimpleSpoofDetector:
         self.model_path = 'memory_optimized_30/yolov8m_1024_30ep_mem/weights/best.pt'
         
         try:
-            # Fix for PyTorch 2.9+ - add safe globals for ultralytics
-            from ultralytics.nn.tasks import ClassificationModel
-            import torch.serialization
-            torch.serialization.add_safe_globals([ClassificationModel])
+            # Fix for PyTorch 2.9+ - disable weights_only for model loading
+            # This is safe for trusted model files
+            original_load = torch.load
+            torch.load = lambda *args, **kwargs: original_load(*args, **{**kwargs, 'weights_only': False})
             
             # Now load the model
             self.model = YOLO(self.model_path)
+            
+            # Restore original torch.load
+            torch.load = original_load
+            
             print(f"✅ YOLO Model loaded: {self.model_path}")
-            print(f"📊 Model classes: {self.model.names}")
+            print(f"� Model classes: {self.model.names}")
             self.model_loaded = True
         except Exception as e:
             print(f"❌ YOLO Model loading failed: {str(e)}")
-            print("🔧 Trying simple loading without safe_globals...")
-            try:
-                # Fallback: Just try loading directly (ultralytics might handle it)
-                self.model = YOLO(self.model_path)
-                print(f"✅ YOLO Model loaded (direct method)")
-                self.model_loaded = True
-            except Exception as e2:
-                print(f"❌ Fallback also failed: {str(e2)}")
-                print("💡 Try: pip install ultralytics --upgrade")
-                self.model_loaded = False
-                self.model = None
+            self.model_loaded = False
+            self.model = None
         
         print("🎯 Simple Spoof Detector Ready!")
     
