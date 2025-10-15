@@ -237,9 +237,9 @@ class SimpleSpoofDetector:
             if ref_img.mode != 'RGB':
                 ref_img = ref_img.convert('RGB')
             
-            # Optimize reference image
-            if ref_img.width > 1280 or ref_img.height > 960:
-                ratio = min(1280 / ref_img.width, 960 / ref_img.height)
+            # Optimize reference image - maintain minimum 800px for face detection
+            if ref_img.width > 1600 or ref_img.height > 1600:
+                ratio = min(1600 / ref_img.width, 1600 / ref_img.height)
                 new_w, new_h = int(ref_img.width * ratio), int(ref_img.height * ratio)
                 ref_img = ref_img.resize((new_w, new_h), Image.Resampling.LANCZOS)
                 print(f"🔧 Reference image resized to: {new_w}x{new_h}")
@@ -250,9 +250,9 @@ class SimpleSpoofDetector:
             if test_img.mode != 'RGB':
                 test_img = test_img.convert('RGB')
             
-            # Optimize test image
-            if test_img.width > 1280 or test_img.height > 960:
-                ratio = min(1280 / test_img.width, 960 / test_img.height)
+            # Optimize test image - maintain minimum 800px for face detection
+            if test_img.width > 1600 or test_img.height > 1600:
+                ratio = min(1600 / test_img.width, 1600 / test_img.height)
                 new_w, new_h = int(test_img.width * ratio), int(test_img.height * ratio)
                 test_img = test_img.resize((new_w, new_h), Image.Resampling.LANCZOS)
                 print(f"🔧 Test image resized to: {new_w}x{new_h}")
