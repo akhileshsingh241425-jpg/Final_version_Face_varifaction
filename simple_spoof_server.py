@@ -12,11 +12,16 @@ import requests
 import numpy as np
 from PIL import Image
 import face_recognition
+import torch
 from ultralytics import YOLO
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+
+# Fix for PyTorch 2.9+ weights_only issue
+import warnings
+warnings.filterwarnings('ignore', category=UserWarning)
 
 # API Configuration
 EMPLOYEE_API_URL = "https://hrm.umanerp.com/api/users/getEmployee"
@@ -30,14 +35,26 @@ class SimpleSpoofDetector:
         self.model_path = 'memory_optimized_30/yolov8m_1024_30ep_mem/weights/best.pt'
         
         try:
-            self.model = YOLO(self.model_path)
+            # Fix for PyTorch 2.9+ - allow loading of ultralytics models
+            import torch.serialization
+            with torch.serialization.safe_globals(['ultralytics.nn.tasks.ClassificationModel']):
+                self.model = YOLO(self.model_path)
             print(f"✅ YOLO Model loaded: {self.model_path}")
             print(f"📊 Model classes: {self.model.names}")
             self.model_loaded = True
         except Exception as e:
             print(f"❌ YOLO Model loading failed: {str(e)}")
-            self.model_loaded = False
-            self.model = None
+            print("🔧 Trying alternative loading method...")
+            try:
+                # Fallback: Load with weights_only=False (less secure but works)
+                os.environ['TORCH_WEIGHTS_ONLY'] = '0'
+                self.model = YOLO(self.model_path)
+                print(f"✅ YOLO Model loaded (fallback method)")
+                self.model_loaded = True
+            except Exception as e2:
+                print(f"❌ Fallback also failed: {str(e2)}")
+                self.model_loaded = False
+                self.model = None
         
         print("🎯 Simple Spoof Detector Ready!")
     
