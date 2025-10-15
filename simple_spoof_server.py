@@ -37,6 +37,7 @@ class SimpleSpoofDetector:
         try:
             # Fix for PyTorch 2.9+ - add safe globals for ultralytics
             from ultralytics.nn.tasks import ClassificationModel
+            import torch.serialization
             torch.serialization.add_safe_globals([ClassificationModel])
             
             # Now load the model
@@ -46,17 +47,15 @@ class SimpleSpoofDetector:
             self.model_loaded = True
         except Exception as e:
             print(f"❌ YOLO Model loading failed: {str(e)}")
-            print("🔧 Trying alternative loading method...")
+            print("🔧 Trying simple loading without safe_globals...")
             try:
-                # Fallback: Use environment variable to disable weights_only
-                import torch._weights_only_unpickler
-                torch._weights_only_unpickler.GLOBAL_ALLOWLIST.add(('ultralytics.nn.tasks', 'ClassificationModel'))
-                
+                # Fallback: Just try loading directly (ultralytics might handle it)
                 self.model = YOLO(self.model_path)
-                print(f"✅ YOLO Model loaded (fallback method)")
+                print(f"✅ YOLO Model loaded (direct method)")
                 self.model_loaded = True
             except Exception as e2:
                 print(f"❌ Fallback also failed: {str(e2)}")
+                print("💡 Try: pip install ultralytics --upgrade")
                 self.model_loaded = False
                 self.model = None
         
