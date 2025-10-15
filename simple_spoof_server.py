@@ -12,11 +12,15 @@ import requests
 import numpy as np
 from PIL import Image
 import face_recognition
+import torch
 from ultralytics import YOLO
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+
+# Fix PyTorch 2.6 weights_only issue for YOLO model loading
+torch.serialization.add_safe_globals(['ultralytics.nn.tasks.ClassificationModel'])
 
 # API Configuration
 EMPLOYEE_API_URL = "https://hrm.umanerp.com/api/users/getEmployee"
