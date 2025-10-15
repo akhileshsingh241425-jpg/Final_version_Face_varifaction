@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 Mobile Spoof Detection</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .mobile-container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .mobile-header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        .mobile-header h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .mobile-header p {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .mobile-content {
+            padding: 25px 20px;
+        }
+
+        .mobile-form {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .mobile-input-group {
+            margin-bottom: 20px;
+        }
+
+        .mobile-input-group label {
+            display: block;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+
+        .mobile-input-group input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 16px; /* Prevents zoom on iOS */
+            background: white;
+        }
+
+        .mobile-input-group input[type="text"]:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .mobile-camera-section {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .camera-preview {
+            width: 100%;
+            max-width: 300px;
+            height: 250px;
+            border: 3px dashed #007bff;
+            border-radius: 15px;
+            margin: 15px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9ff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .camera-preview video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+
+        .camera-preview canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+
+        .camera-placeholder {
+            color: #007bff;
+            font-size: 3em;
+            text-align: center;
+        }
+
+        .mobile-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .mobile-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-camera {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-capture {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-verify {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+        }
+
+        .btn-file {
+            background: #6c757d;
+            color: white;
+        }
+
+        .mobile-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .hidden-file-input {
+            display: none;
+        }
+
+        .mobile-result {
+            margin-top: 20px;
+            border-radius: 15px;
+            padding: 20px;
+            display: none;
+        }
+
+        .result-success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+
+        .result-error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+
+        .mobile-result h3 {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .mobile-result h3 i {
+            margin-right: 10px;
+        }
+
+        .mobile-status {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .status-badge {
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .status-pass {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-fail {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-skip {
+            background: #e2e3e5;
+            color: #495057;
+        }
+
+        .confidence-display {
+            margin: 15px 0;
+        }
+
+        .confidence-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #dee2e6;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 15px;
+            background: #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 8px;
+            transition: width 0.5s ease;
+        }
+
+        .spoof-confidence {
+            background: linear-gradient(90deg, #ff6b6b, #ee5a24);
+        }
+
+        .face-confidence {
+            background: linear-gradient(90deg, #28a745, #20c997);
+        }
+
+        .mobile-loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .mobile-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 480px) {
+            .mobile-content {
+                padding: 20px 15px;
+            }
+            
+            .mobile-buttons {
+                flex-direction: column;
+            }
+            
+            .camera-preview {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-container">
+        <div class="mobile-header">
+            <h1><i class="fas fa-mobile-alt"></i> Mobile Spoof Detection</h1>
+            <p>AI-Powered Security on the Go</p>
+        </div>
+
+        <div class="mobile-content">
+            <div class="mobile-form">
+                <div class="mobile-input-group">
+                    <label for="mobileEmployeeId">
+                        <i class="fas fa-id-badge"></i> Employee ID
+                    </label>
+                    <input type="text" id="mobileEmployeeId" value="4265" required 
+                           placeholder="Enter employee ID...">
+                </div>
+
+                <div class="mobile-camera-section">
+                    <label><i class="fas fa-camera"></i> Capture or Upload Image</label>
+                    <div class="camera-preview" id="cameraPreview">
+                        <div class="camera-placeholder">
+                            <i class="fas fa-camera"></i>
+                            <div style="font-size: 0.4em; margin-top: 10px;">Tap to start camera</div>
+                        </div>
+                    </div>
+
+                    <div class="mobile-buttons">
+                        <button class="mobile-btn btn-camera" id="startCamera">
+                            <i class="fas fa-video"></i> Camera
+                        </button>
+                        <button class="mobile-btn btn-capture" id="capturePhoto" disabled>
+                            <i class="fas fa-camera-retro"></i> Capture
+                        </button>
+                    </div>
+
+                    <div class="mobile-buttons">
+                        <button class="mobile-btn btn-file" id="selectFile">
+                            <i class="fas fa-folder-open"></i> Choose File
+                        </button>
+                        <button class="mobile-btn btn-verify" id="verifyBtn" disabled>
+                            <i class="fas fa-search"></i> Verify
+                        </button>
+                    </div>
+
+                    <input type="file" id="fileInput" accept="image/*" class="hidden-file-input">
+                </div>
+            </div>
+
+            <div class="mobile-loading" id="mobileLoading">
+                <div class="mobile-spinner"></div>
+                <h3>🔍 Processing...</h3>
+                <p>Analyzing image for spoof detection</p>
+            </div>
+
+            <div id="mobileResult" class="mobile-result">
+                <!-- Results will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let video = null;
+        let canvas = null;
+        let capturedImageBlob = null;
+        let stream = null;
+
+        const startCameraBtn = document.getElementById('startCamera');
+        const captureBtn = document.getElementById('capturePhoto');
+        const selectFileBtn = document.getElementById('selectFile');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const fileInput = document.getElementById('fileInput');
+        const cameraPreview = document.getElementById('cameraPreview');
+        const mobileLoading = document.getElementById('mobileLoading');
+        const mobileResult = document.getElementById('mobileResult');
+
+        // Start camera
+        startCameraBtn.addEventListener('click', async function() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'user',
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    } 
+                });
+                
+                video = document.createElement('video');
+                video.srcObject = stream;
+                video.autoplay = true;
+                video.playsInline = true;
+                
+                cameraPreview.innerHTML = '';
+                cameraPreview.appendChild(video);
+                
+                captureBtn.disabled = false;
+                startCameraBtn.textContent = '📹 Stop';
+                startCameraBtn.onclick = stopCamera;
+                
+            } catch (err) {
+                alert('Camera access denied or not available: ' + err.message);
+            }
+        });
+
+        // Stop camera
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            cameraPreview.innerHTML = `
+                <div class="camera-placeholder">
+                    <i class="fas fa-camera"></i>
+                    <div style="font-size: 0.4em; margin-top: 10px;">Tap to start camera</div>
+                </div>
+            `;
+            captureBtn.disabled = true;
+            startCameraBtn.innerHTML = '<i class="fas fa-video"></i> Camera';
+            startCameraBtn.onclick = startCameraBtn.addEventListener('click', arguments.callee);
+        }
+
+        // Capture photo
+        captureBtn.addEventListener('click', function() {
+            if (!video) return;
+            
+            canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            context.drawImage(video, 0, 0);
+            
+            // Replace video with captured image
+            cameraPreview.innerHTML = '';
+            cameraPreview.appendChild(canvas);
+            
+            // Convert to blob
+            canvas.toBlob(function(blob) {
+                capturedImageBlob = blob;
+                verifyBtn.disabled = false;
+            }, 'image/jpeg', 0.8);
+            
+            // Stop camera after capture
+            stopCamera();
+        });
+
+        // Select file
+        selectFileBtn.addEventListener('click', function() {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files[0]) {
+                capturedImageBlob = e.target.files[0];
+                
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    cameraPreview.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">`;
+                };
+                reader.readAsDataURL(capturedImageBlob);
+                
+                verifyBtn.disabled = false;
+            }
+        });
+
+        // Verify
+        verifyBtn.addEventListener('click', async function() {
+            const employeeId = document.getElementById('mobileEmployeeId').value;
+            
+            if (!employeeId || !capturedImageBlob) {
+                alert('Please enter employee ID and capture/select an image!');
+                return;
+            }
+
+            // Show loading
+            mobileLoading.style.display = 'block';
+            mobileResult.style.display = 'none';
+
+            try {
+                const formData = new FormData();
+                formData.append('employee_id', employeeId);
+                formData.append('image', capturedImageBlob);
+
+                const response = await fetch('/verify', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                displayMobileResult(result);
+
+            } catch (error) {
+                displayMobileError(error.message);
+            } finally {
+                mobileLoading.style.display = 'none';
+            }
+        });
+
+        function displayMobileResult(result) {
+            const section = document.getElementById('mobileResult');
+            const isSuccess = result.success;
+            const resultClass = isSuccess ? 'result-success' : 'result-error';
+            
+            let html = `
+                <div class="${resultClass}">
+                    <h3>
+                        <i class="fas fa-${isSuccess ? 'check-circle' : 'times-circle'}"></i>
+                        ${isSuccess ? 'SUCCESS' : 'FAILED'}
+                    </h3>
+                    <p>${result.message}</p>
+            `;
+
+            // Status badges
+            if (result.spoof_detection || result.face_verification) {
+                html += '<div class="mobile-status">';
+                
+                if (result.spoof_detection) {
+                    const spoofPassed = !result.spoof_detection.spoof_detected;
+                    html += `
+                        <div class="status-badge ${spoofPassed ? 'status-pass' : 'status-fail'}">
+                            <i class="fas fa-${spoofPassed ? 'shield-alt' : 'exclamation-triangle'}"></i>
+                            Spoof Detection: ${spoofPassed ? 'PASSED' : 'FAILED'}
+                        </div>
+                    `;
+                }
+                
+                if (result.face_verification && !result.face_verification.skipped) {
+                    const facePassed = result.face_verification.verified;
+                    html += `
+                        <div class="status-badge ${facePassed ? 'status-pass' : 'status-fail'}">
+                            <i class="fas fa-${facePassed ? 'user-check' : 'user-times'}"></i>
+                            Face Verification: ${facePassed ? 'PASSED' : 'FAILED'}
+                        </div>
+                    `;
+                } else if (result.face_verification && result.face_verification.skipped) {
+                    html += `
+                        <div class="status-badge status-skip">
+                            <i class="fas fa-ban"></i>
+                            Face Verification: SKIPPED
+                        </div>
+                    `;
+                }
+                
+                html += '</div>';
+            }
+
+            // Confidence display
+            if (result.spoof_detection || result.face_verification) {
+                html += '<div class="confidence-display">';
+                
+                if (result.spoof_detection) {
+                    const spoof = result.spoof_detection;
+                    html += `
+                        <div class="confidence-item">
+                            <strong>🛡️ Spoof Detection</strong><br>
+                            <small>${spoof.spoof_detected ? 'SPOOF' : 'REAL'} - ${spoof.confidence_percent}%</small>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill spoof-confidence" style="width: ${spoof.confidence_percent}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (result.face_verification && !result.face_verification.skipped) {
+                    const face = result.face_verification;
+                    html += `
+                        <div class="confidence-item">
+                            <strong>👤 Face Match</strong><br>
+                            <small>${face.verified ? 'MATCH' : 'NO MATCH'} - ${face.confidence.toFixed(1)}%</small>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill face-confidence" style="width: ${face.confidence}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                html += '</div>';
+            }
+
+            html += `<p style="text-align: center; margin-top: 15px; font-size: 0.9em; color: #6c757d;">
+                <i class="fas fa-clock"></i> Processed in ${result.processing_time}s
+            </p>`;
+
+            html += '</div>';
+            
+            section.innerHTML = html;
+            section.style.display = 'block';
+        }
+
+        function displayMobileError(message) {
+            const section = document.getElementById('mobileResult');
+            section.innerHTML = `
+                <div class="result-error">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Error</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+            section.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
