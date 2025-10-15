@@ -19,9 +19,6 @@ from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-# Fix PyTorch 2.6 weights_only issue for YOLO model loading
-torch.serialization.add_safe_globals(['ultralytics.nn.tasks.ClassificationModel'])
-
 # API Configuration
 EMPLOYEE_API_URL = "https://hrm.umanerp.com/api/users/getEmployee"
 
@@ -34,6 +31,14 @@ class SimpleSpoofDetector:
         self.model_path = 'memory_optimized_30/yolov8m_1024_30ep_mem/weights/best.pt'
         
         try:
+            # Fix for PyTorch 2.6+ - Load model with weights_only=False for trust
+            import warnings
+            warnings.filterwarnings('ignore', category=FutureWarning)
+            
+            # Use torch.load context to allow YOLO model
+            from ultralytics.nn.tasks import ClassificationModel
+            torch.serialization.add_safe_globals([ClassificationModel])
+            
             self.model = YOLO(self.model_path)
             print(f"✅ YOLO Model loaded: {self.model_path}")
             print(f"📊 Model classes: {self.model.names}")
