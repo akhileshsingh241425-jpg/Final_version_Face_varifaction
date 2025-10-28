@@ -419,13 +419,14 @@ detector = SimpleSpoofDetector()
 # FastAPI app
 app = FastAPI(title="🔥 Simple Spoof Detection Server", version="1.0")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# CORS handled by Nginx - FastAPI CORS disabled to avoid duplicate headers
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"],
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 
 @app.post("/verify")
 async def verify_employee(
