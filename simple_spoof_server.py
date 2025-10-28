@@ -473,6 +473,18 @@ async def verify_employee(
             }
         )
 
+@app.options("/verify")
+async def verify_options():
+    """Handle CORS preflight requests for /verify endpoint"""
+    return JSONResponse(
+        content={"message": "OK"}, 
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )
+
 @app.get("/", response_class=HTMLResponse)
 async def main_ui():
     """Simple UI for testing"""
